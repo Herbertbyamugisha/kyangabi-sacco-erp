@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kyangabi SACCO ERP</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--surface3:#e5e4dc;
+  --primary:#1a5276;--primary-d:#154360;--primary-l:#d6eaf8;
+  --accent:#d4a017;--green:#1a8754;--red:#c0392b;--orange:#e67e22;
+  --text:#1c1c1c;--text2:#4a4a4a;--text3:#888;--border:#d8d7d0;
+  --font:'Georgia',serif;--sans:'Trebuchet MS',sans-serif;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:13px}
+
+/* ── LOGIN PAGE ─────────────────────────────────────────────────────────────── */
+#login-page{display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a3a5c 0%,#1a5276 60%,#2471a3 100%)}
+.login-card{background:#fff;border-radius:16px;padding:40px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-logo{width:72px;height:72px;background:var(--primary);border-radius:14px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:28px;font-weight:bold;color:#fff;letter-spacing:-1px}
+.login-card h1{font-family:var(--font);font-size:20px;color:var(--primary);margin-bottom:4px}
+.login-card p{font-size:12px;color:var(--text3);margin-bottom:24px;line-height:1.5}
+.btn-google{width:100%;padding:12px;border:1.5px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--sans);font-size:14px;font-weight:600;color:#3c3c3c;transition:all .2s;margin-bottom:12px}
+.btn-google:hover{background:#f8f8f8;border-color:#a0a0a0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.btn-google svg{flex-shrink:0}
+.login-note{font-size:11px;color:var(--text3);margin-top:16px;line-height:1.6}
+.login-footer{margin-top:24px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:var(--text3)}
+.error-msg{background:#fde8e8;color:#922b21;border-radius:6px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none}
+
+/* ── APP SHELL ──────────────────────────────────────────────────────────────── */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--primary);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.topbar-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand-logo{width:34px;height:34px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:15px;font-weight:bold;color:var(--primary)}
+.brand-text h1{font-size:12px;font-weight:700;letter-spacing:.4px}
+.brand-text p{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px}
+.topbar-center{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.65)}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.user-menu{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 10px 4px 5px;cursor:pointer}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent);object-fit:cover}
+.user-name{font-size:11px;color:#fff;font-weight:500;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-role{font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.4px}
+
+/* ── NAV ────────────────────────────────────────────────────────────────────── */
+.nav{background:var(--primary-d);border-bottom:2px solid var(--accent);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav-inner{display:flex;padding:0 10px;min-width:max-content}
+.nav-btn{padding:8px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;cursor:pointer;color:rgba(255,255,255,.5);border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--sans)}
+.nav-btn:hover{color:rgba(255,255,255,.8)}
+.nav-btn.active{color:#fff;border-bottom-color:var(--accent)}
+
+/* ── MAIN ───────────────────────────────────────────────────────────────────── */
+.main{padding:16px 20px;flex:1}
+.page{display:none}.page.active{display:block}
+
+/* ── CARDS ──────────────────────────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap}
+.card-title{font-family:var(--font);font-size:14px;color:var(--primary);white-space:nowrap}
+
+/* ── KPI ────────────────────────────────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;border-left:3px solid var(--primary);transition:box-shadow .2s}
+.kpi:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.kpi.g{border-left-color:var(--green)}.kpi.o{border-left-color:var(--orange)}.kpi.r{border-left-color:var(--red)}.kpi.a{border-left-color:var(--accent)}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:4px}
+.kpi-value{font-size:19px;font-family:var(--font);font-weight:bold;color:var(--primary)}
+.kpi.g .kpi-value{color:var(--green)}.kpi.r .kpi-value{color:var(--red)}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── TABLES ─────────────────────────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--primary);color:#fff;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--surface2)}
+.r{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:2px 7px;border-radius:12px;font-size:10px;font-weight:600}
+.badge.active{background:#d5f5e3;color:#1a6b47}
+.badge.cleared{background:#d6eaf8;color:#1a5276}
+.badge.defaulted{background:#fde8e8;color:#922b21}
+.badge.perm{background:#e8f4e8;color:#1a6b47}
+.badge.semi{background:#fef3cd;color:#856404}
+.badge.pending{background:#fff3cd;color:#856404}
+.badge.admin{background:var(--primary);color:#fff}
+.badge.treasurer{background:#1a5276;color:#fff}
+.badge.viewer{background:#888;color:#fff}
+
+/* ── FORMS ──────────────────────────────────────────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.fg input,.fg select,.fg textarea{padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--sans);font-size:12px;background:var(--surface);transition:border-color .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,82,118,.1)}
+.fg input[readonly]{background:var(--surface2);color:var(--text3)}
+.fg input.calc{background:#eafaf1;font-weight:700;color:var(--green);border-color:#a9dfbf}
+.sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--primary);padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:4px;grid-column:1/-1}
+
+/* ── BUTTONS ────────────────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-p{background:var(--primary);color:#fff}.btn-p:hover{background:var(--primary-d)}
+.btn-s{background:var(--green);color:#fff}.btn-s:hover{background:#145a38}
+.btn-w{background:var(--orange);color:#fff}
+.btn-d{background:var(--red);color:#fff}
+.btn-o{background:transparent;color:var(--primary);border:1px solid var(--primary)}.btn-o:hover{background:var(--primary);color:#fff}
+.btn-sm{padding:4px 9px;font-size:11px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+
+/* ── ALERTS ─────────────────────────────────────────────────────────────────── */
+.alert{padding:9px 12px;border-radius:var(--radius);font-size:12px;margin-bottom:10px;border-left:3px solid}
+.al-i{background:#eaf4fb;border-color:#2471a3;color:#1a4e6b}
+.al-s{background:#eafaf1;border-color:var(--green);color:#1a6b47}
+.al-w{background:#fef9e7;border-color:var(--orange);color:#7d5a0a}
+.al-e{background:#fde8e8;border-color:var(--red);color:#922b21}
+
+/* ── SUB TABS ───────────────────────────────────────────────────────────────── */
+.stabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.stab{padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--sans);transition:all .15s}
+.stab:hover{color:var(--primary)}.stab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* ── FINANCIAL STMTS ────────────────────────────────────────────────────────── */
+.fstmt td{padding:5px 10px;border-bottom:1px solid #f0efe9;font-size:12px}
+.fstmt tr.sec td{background:var(--primary);color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:6px 10px}
+.fstmt tr.ind td:first-child{padding-left:24px}
+.fstmt tr.sub td{border-top:1px solid var(--border);font-weight:600;background:var(--surface2)}
+.fstmt tr.tot td{border-top:2px solid var(--primary);border-bottom:2px solid var(--primary);font-weight:700;background:#eaf4fb}
+.neg{color:var(--red)}
+
+/* ── AUDIT ──────────────────────────────────────────────────────────────────── */
+.arow{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;align-items:baseline}
+.ats{color:var(--text3);min-width:140px;font-family:monospace;font-size:10px}
+.auser{font-weight:600;color:var(--primary);min-width:70px}
+.amod{font-size:9px;text-transform:uppercase;color:var(--text3);min-width:80px;background:var(--surface2);border-radius:3px;padding:1px 5px;align-self:center}
+.aact{color:var(--text2);flex:1}
+
+/* ── TOAST ──────────────────────────────────────────────────────────────────── */
+.toast-wrap{position:fixed;bottom:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{background:var(--primary);color:#fff;padding:10px 16px;border-radius:var(--radius);font-size:12px;max-width:300px;pointer-events:all;animation:tin .3s;display:flex;align-items:center;gap:8px}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.warn{background:var(--orange)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+
+/* ── LOADING ────────────────────────────────────────────────────────────────── */
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;z-index:200;display:none}
+
+/* ── MISC ───────────────────────────────────────────────────────────────────── */
+.flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flex-b{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.divider{height:1px;background:var(--border);margin:10px 0}
+.text-s{color:var(--green)}.text-d{color:var(--red)}.text-m{color:var(--text3);font-size:11px}
+.stamp{font-size:10px;color:var(--text3);background:var(--surface2);border-radius:3px;padding:2px 6px;font-family:monospace}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN PAGE ═══════════════════════════════════════════════════════════ -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">K</div>
+    <h1>Kyangabi SACCO ERP</h1>
+    <p>Enterprise Resource Planning System<br>for Kyangabi Crater Resort Staff SACCO</p>
+    <div class="error-msg" id="login-error"></div>
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="login-note">
+      Access is restricted to authorised SACCO members and officers.<br>
+      Only registered Gmail accounts approved by the Treasurer may access this system.
+    </div>
+    <div class="login-footer">
+      Kyangabi Crater Resort Staff SACCO &copy; 2026 &nbsp;&bull;&nbsp; v2.0
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOADING ══════════════════════════════════════════════════════════════ -->
+<div class="loading-overlay" id="loading">
+  <div style="text-align:center">
+    <div class="spinner" style="border-top-color:var(--primary);border-color:var(--border);width:36px;height:36px;border-width:3px;margin:0 auto 10px"></div>
+    <div style="font-size:12px;color:var(--text3)" id="loading-msg">Loading...</div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══════════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-logo">K</div>
+    <div class="brand-text"><h1>KYANGABI SACCO ERP</h1><p>2026 Financial System</p></div>
+  </div>
+  <div class="topbar-center" id="clock-display">Loading...</div>
+  <div class="topbar-right">
+    <div id="user-info" class="user-menu">
+      <img class="user-avatar" id="user-pic" src="" alt="">
+      <div><div class="user-name" id="user-name">User</div><div class="user-role" id="user-role">viewer</div></div>
+    </div>
+    <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner" id="nav-tabs">
+    <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+    <button class="nav-btn" data-page="members">Members</button>
+    <button class="nav-btn" data-page="loans">Loans</button>
+    <button class="nav-btn" data-page="savings">Savings</button>
+    <button class="nav-btn" data-page="deductions">Deductions</button>
+    <button class="nav-btn" data-page="expenditure">Expenditure</button>
+    <button class="nav-btn" data-page="financials">Financials</button>
+    <button class="nav-btn" data-page="reports">Reports</button>
+    <button class="nav-btn" data-page="audit" id="nav-audit" style="display:none">Audit Trail</button>
+    <button class="nav-btn" data-page="users" id="nav-users" style="display:none">Users</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi g"><div class="kpi-label">Active Members</div><div class="kpi-value" id="kpi-active-members">—</div><div class="kpi-sub">Registered</div></div>
+    <div class="kpi"><div class="kpi-label">Total Savings</div><div class="kpi-value" id="kpi-savings">—</div><div class="kpi-sub">Cumulative UGX</div></div>
+    <div class="kpi a"><div class="kpi-label">Loans Disbursed</div><div class="kpi-value" id="kpi-disbursed">—</div><div class="kpi-sub">Total UGX</div></div>
+    <div class="kpi o"><div class="kpi-label">Outstanding</div><div class="kpi-value" id="kpi-outstanding">—</div><div class="kpi-sub">Current balance UGX</div></div>
+    <div class="kpi r"><div class="kpi-label">Defaulted Loans</div><div class="kpi-value" id="kpi-defaulted">—</div><div class="kpi-sub">Requires action</div></div>
+    <div class="kpi g"><div class="kpi-label">This Month Savings</div><div class="kpi-value" id="kpi-month-sav">—</div><div class="kpi-sub">Current month UGX</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card"><div class="card-header"><span class="card-title">Loan Portfolio</span></div><div id="dash-loans"></div></div>
+    <div class="card"><div class="card-header"><span class="card-title">Recent Audit Activity</span></div><div id="dash-audit"></div></div>
+  </div>
+</div>
+
+<!-- MEMBERS -->
+<div class="page" id="page-members">
+  <div class="stabs">
+    <button class="stab active" data-sub="m-list">Member Register</button>
+    <button class="stab" data-sub="m-form">Add / Edit Member</button>
+    <button class="stab" data-sub="m-stmt">Member Statement</button>
+  </div>
+  <div id="sub-m-list">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Members Register — 2026</span>
+        <div class="flex">
+          <input type="text" id="m-search" placeholder="Name or Reg No..." style="width:180px" oninput="loadMembers()">
+          <select id="m-f-type" onchange="loadMembers()"><option value="">All Types</option><option>Permanent</option><option>Semi-Permanent</option></select>
+          <select id="m-f-status" onchange="loadMembers()"><option value="">All Status</option><option>Active</option><option>Inactive</option></select>
+          <button class="btn btn-s btn-sm" onclick="newMember()">+ Add Member</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Reg.</th><th>Full Name</th><th>Type</th><th>Joined</th><th>Monthly Savings</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead><tbody id="members-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div id="sub-m-form" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" id="m-form-title">Register New Member</span>
+        <div class="flex"><button class="btn btn-o btn-sm" onclick="showSub('m','m-list')">Back to List</button></div>
+      </div>
+      <div class="alert al-i" id="m-edit-alert" style="display:none">Editing existing record — all changes are timestamped in the audit trail.</div>
+      <div class="form-grid">
+        <div class="sec-title">Personal Information</div>
+        <div class="fg"><label>Full Name *</label><input id="mf-name" type="text"></div>
+        <div class="fg"><label>Registration No. *</label><input id="mf-reg" type="text"></div>
+        <div class="fg"><label>National ID</label><input id="mf-nid" type="text"></div>
+        <div class="fg"><label>Phone</label><input id="mf-phone" type="text"></div>
+        <div class="fg"><label>Email</label><input id="mf-email" type="email"></div>
+        <div class="fg"><label>Department</label><input id="mf-dept" type="text"></div>
+        <div class="sec-title">SACCO Details</div>
+        <div class="fg"><label>Staff Type *</label><select id="mf-type"><option value="">Select...</option><option>Permanent</option><option>Semi-Permanent</option><option>Casual</option></select></div>
+        <div class="fg"><label>Date Joined *</label><input id="mf-date" type="date"></div>
+        <div class="fg"><label>Monthly Savings (UGX) *</label><input id="mf-savings" type="number" min="0"></div>
+        <div class="fg"><label>Share Contribution (UGX)</label><input id="mf-shares" type="number" min="0" value="40000"></div>
+        <div class="fg"><label>Registration Fee (UGX)</label><input id="mf-regfee" type="number" min="0" value="40000"></div>
+        <div class="fg"><label>Status</label><select id="mf-status"><option>Active</option><option>Inactive</option><option>Suspended</option><option>Exited</option></select></div>
+        <div class="fg"><label>Next of Kin</label><input id="mf-nok" type="text"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Remarks</label><textarea id="mf-remarks" rows="2"></textarea></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="saveMember()">Save Member</button>
+        <button class="btn btn-o" onclick="clearMemberForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div id="sub-m-stmt" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Member Account Statement</span></div>
+      <div class="flex" style="margin-bottom:14px;gap:10px">
+        <div class="fg" style="min-width:200px"><label>Member</label><select id="stmt-member"><option value="">Choose member...</option></select></div>
+        <div class="fg"><label>From</label><input type="date" id="stmt-from" value="2026-01-01"></div>
+        <div class="fg"><label>To</label><input type="date" id="stmt-to"></div>
+        <button class="btn btn-p" style="margin-top:16px" onclick="generateStatement()">Generate</button>
+      </div>
+      <div id="stmt-output"><div class="alert al-i">Select a member and date range above.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOANS -->
+<div class="page" id="page-loans">
+  <div class="stabs">
+    <button class="stab active" data-sub="l-list">Loans Register</button>
+    <button class="stab" data-sub="l-form">New Loan</button>
+    <button class="stab" data-sub="l-sched">Schedule</button>
+  </div>
+  <div id="sub-l-list">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Loans Register</span>
+        <div class="flex">
+          <select id="l-f-status" onchange="loadLoans()"><option value="">All Status</option><option>Active</option><option>Cleared</option><option>Defaulted</option></select>
+          <button class="btn btn-s btn-sm" onclick="showSub('l','l-form')">+ New Loan</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Loan ID</th><th>Member</th><th>Type</th><th>Date</th><th>Principal</th><th>Interest</th><th>Monthly</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead><tbody id="loans-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div id="sub-l-form" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="card-title">New Loan Application — 2026</span><button class="btn btn-o btn-sm" onclick="showSub('l','l-list')">Back</button></div>
+      <div class="form-grid">
+        <div class="sec-title">Loan Information</div>
+        <div class="fg"><label>Member *</label><select id="lf-member"><option value="">Select member...</option></select></div>
+        <div class="fg"><label>Loan Type *</label><select id="lf-type" onchange="calcLoan()"><option>Long Term</option><option>Quick Loan</option><option>Emergency Loan</option></select></div>
+        <div class="fg"><label>Loan Date *</label><input id="lf-date" type="date" oninput="calcLoan()"></div>
+        <div class="fg"><label>Principal (UGX) *</label><input id="lf-principal" type="number" min="0" oninput="calcLoan()"></div>
+        <div class="fg"><label>Interest Rate (%/yr)</label><input id="lf-rate" type="number" value="15" step="0.5" oninput="calcLoan()"></div>
+        <div class="fg"><label>Duration (Months) *</label><input id="lf-dur" type="number" value="12" min="1" max="48" oninput="calcLoan()"></div>
+        <div class="fg"><label>Guarantor</label><select id="lf-guarantor"><option value="">None</option></select></div>
+        <div class="fg"><label>Purpose</label><input id="lf-purpose" type="text"></div>
+        <div class="fg"><label>Approved By</label><input id="lf-approved" type="text"></div>
+        <div class="sec-title">Calculated (Auto)</div>
+        <div class="fg"><label>Monthly Instalment (UGX)</label><input id="lf-install" class="calc" readonly></div>
+        <div class="fg"><label>Total Interest (UGX)</label><input id="lf-tint" class="calc" readonly></div>
+        <div class="fg"><label>Total Payable (UGX)</label><input id="lf-total" class="calc" readonly></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="submitLoan()">Submit Loan</button>
+        <button class="btn btn-s" onclick="showSub('l','l-sched')">Preview Schedule</button>
+        <button class="btn btn-o" onclick="clearLoanForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div id="sub-l-sched" style="display:none">
+    <div class="card"><div class="card-header"><span class="card-title">Amortization Schedule</span><button class="btn btn-o btn-sm" onclick="showSub('l','l-list')">Back</button></div><div id="loan-sched-out"><div class="alert al-i">Create or select a loan to view its schedule.</div></div></div>
+  </div>
+</div>
+
+<!-- SAVINGS -->
+<div class="page" id="page-savings">
+  <div class="stabs">
+    <button class="stab active" data-sub="s-entry">Monthly Entry</button>
+    <button class="stab" data-sub="s-ledger">Savings Ledger</button>
+  </div>
+  <div id="sub-s-entry">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Monthly Savings Entry</span>
+        <div class="flex">
+          <select id="sav-year"><option>2026</option><option>2025</option></select>
+          <select id="sav-month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
+          <button class="btn btn-sm btn-p" onclick="loadSavingsEntry()">Load</button>
+        </div>
+      </div>
+      <div id="sav-entry-wrap">
+        <div class="alert al-i">Select year and month then click Load.</div>
+      </div>
+    </div>
+  </div>
+  <div id="sub-s-ledger" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Savings Ledger</span>
+        <div class="flex"><select id="ledger-year"><option>2026</option><option>2025</option><option>2024</option></select><button class="btn btn-sm btn-p" onclick="loadLedger()">Load</button></div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>Total</th></tr></thead><tbody id="ledger-tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- DEDUCTIONS -->
+<div class="page" id="page-deductions">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Monthly Deductions Sheet</span>
+      <div class="flex">
+        <select id="ded-year"><option>2026</option><option>2025</option></select>
+        <select id="ded-month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
+        <button class="btn btn-sm btn-p" onclick="loadDeductions()">Load</button>
+      </div>
+    </div>
+    <div class="alert al-w">Amounts auto-populated from savings & active loans. Edit directly in cells. Click Finalise to lock.</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Savings</th><th>Shares</th><th>LT Loan</th><th>Quick Loan</th><th>Guarantor</th><th>MABUGO</th><th>Other</th><th style="background:#c17f00">TOTAL</th></tr></thead>
+        <tbody id="ded-tbody"></tbody>
+        <tfoot><tr style="background:var(--surface2);font-weight:700"><td colspan="3">TOTALS</td><td id="dt-s" class="r"></td><td id="dt-sh" class="r"></td><td id="dt-l" class="r"></td><td id="dt-q" class="r"></td><td id="dt-g" class="r"></td><td id="dt-m" class="r"></td><td id="dt-o" class="r"></td><td id="dt-t" class="r" style="color:var(--primary);font-size:13px"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="btn-row"><button class="btn btn-p" onclick="finaliseDeductions()">Finalise &amp; Lock</button><button class="btn btn-o">Print Sheet</button></div>
+  </div>
+</div>
+
+<!-- EXPENDITURE -->
+<div class="page" id="page-expenditure">
+  <div class="stabs">
+    <button class="stab active" data-sub="e-entry">Record Daily</button>
+    <button class="stab" data-sub="e-list">Expenditure Log</button>
+    <button class="stab" data-sub="e-summary">Monthly Summary</button>
+  </div>
+  <div id="sub-e-entry">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Record Daily Expenditure</span></div>
+      <div class="form-grid">
+        <div class="sec-title">Transaction Details</div>
+        <div class="fg"><label>Date *</label><input id="ef-date" type="date"></div>
+        <div class="fg"><label>Category *</label><select id="ef-cat"><option value="">Select...</option><option>Operational Expenses</option><option>Stationery & Printing</option><option>Bank Charges</option><option>Meeting Allowances</option><option>Welfare & Benevolence</option><option>Audit Fees</option><option>MABUGO Fund Disbursement</option><option>Loan Disbursement</option><option>Miscellaneous</option></select></div>
+        <div class="fg"><label>Sub-Category</label><input id="ef-subcat" type="text" placeholder="e.g. Printer paper"></div>
+        <div class="fg"><label>Amount (UGX) *</label><input id="ef-amount" type="number" min="0"></div>
+        <div class="fg"><label>Payment Method</label><select id="ef-method"><option>Cash</option><option>Mobile Money</option><option>Bank Transfer</option><option>Cheque</option></select></div>
+        <div class="fg"><label>Payee / Vendor</label><input id="ef-payee" type="text"></div>
+        <div class="fg"><label>Approved By</label><select id="ef-approver"><option>Chairperson</option><option>Treasurer</option><option>Secretary</option></select></div>
+        <div class="fg"><label>Voucher / Receipt No.</label><input id="ef-voucher" type="text"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Description *</label><textarea id="ef-desc" rows="2"></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-p" onclick="saveExpenditure()">Record Expenditure</button><button class="btn btn-o" onclick="clearExpForm()">Clear</button></div>
+    </div>
+  </div>
+  <div id="sub-e-list" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Expenditure Log</span>
+        <div class="flex"><input type="date" id="ef-from"><span>to</span><input type="date" id="ef-to"><button class="btn btn-sm btn-p" onclick="loadExpenditures()">Filter</button></div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Ref</th><th>Date</th><th>Category</th><th>Description</th><th>Payee</th><th>Method</th><th class="r">Amount (UGX)</th><th>Approved</th><th>Actions</th></tr></thead><tbody id="exp-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div id="sub-e-summary" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Monthly Expenditure Summary</span>
+        <div class="flex"><select id="esum-month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select><select id="esum-year"><option>2026</option><option>2025</option></select><button class="btn btn-sm btn-p" onclick="loadExpSummary()">Load</button></div>
+      </div>
+      <div id="exp-sum-out"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FINANCIALS -->
+<div class="page" id="page-financials">
+  <div class="stabs">
+    <button class="stab active" data-sub="f-tb">Trial Balance</button>
+    <button class="stab" data-sub="f-is">Income Statement</button>
+    <button class="stab" data-sub="f-bs">Balance Sheet</button>
+    <button class="stab" data-sub="f-cf">Cash Flow</button>
+  </div>
+  <div id="sub-f-tb"><div class="card"><div class="card-header"><span class="card-title">Trial Balance</span><div class="flex"><select id="tb-year"><option>2025</option><option>2026</option></select><button class="btn btn-sm btn-p" onclick="loadTrialBalance()">Generate</button><button class="btn btn-sm btn-o">Print</button></div></div><div id="tb-out"></div></div></div>
+  <div id="sub-f-is" style="display:none"><div class="card"><div class="card-header"><span class="card-title">Income &amp; Expenditure Statement — Year ended 31 Dec 2025</span><button class="btn btn-sm btn-o">Print</button></div><div id="is-out"></div></div></div>
+  <div id="sub-f-bs" style="display:none"><div class="card"><div class="card-header"><span class="card-title">Balance Sheet — As at 31 Dec 2025</span><button class="btn btn-sm btn-o">Print</button></div><div id="bs-out"></div></div></div>
+  <div id="sub-f-cf" style="display:none"><div class="card"><div class="card-header"><span class="card-title">Cash Flow Statement — Year ended 31 Dec 2025</span><button class="btn btn-sm btn-o">Print</button></div><div id="cf-out"></div></div></div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="page-reports">
+  <div class="stabs">
+    <button class="stab active" data-sub="r-weekly">Weekly</button>
+    <button class="stab" data-sub="r-monthly">Monthly</button>
+  </div>
+  <div id="sub-r-weekly">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Weekly Report</span></div>
+      <div class="flex" style="margin-bottom:12px;gap:10px">
+        <div class="fg"><label>From</label><input type="date" id="rw-from"></div>
+        <div class="fg"><label>To</label><input type="date" id="rw-to"></div>
+        <button class="btn btn-p" style="margin-top:16px" onclick="generateWeeklyReport()">Generate</button>
+      </div>
+      <div id="weekly-out"></div>
+    </div>
+  </div>
+  <div id="sub-r-monthly" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Monthly Report</span></div>
+      <div class="flex" style="margin-bottom:12px;gap:10px">
+        <div class="fg"><label>Month</label><select id="rm-month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+        <div class="fg"><label>Year</label><select id="rm-year"><option>2026</option><option>2025</option></select></div>
+        <button class="btn btn-p" style="margin-top:16px" onclick="generateMonthlyReport()">Generate</button>
+      </div>
+      <div id="monthly-out"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIT -->
+<div class="page" id="page-audit">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Audit Trail — Immutable Change Log</span>
+      <div class="flex">
+        <select id="aud-mod"><option value="">All Modules</option><option>Members</option><option>Loans</option><option>Savings</option><option>Expenditure</option><option>Deductions</option><option>Settings</option><option>Auth</option></select>
+        <input type="date" id="aud-from"><input type="date" id="aud-to">
+        <button class="btn btn-sm btn-p" onclick="loadAudit()">Filter</button>
+      </div>
+    </div>
+    <div class="alert al-w"><strong>Immutable:</strong> All entries below are permanent. Corrections create new entries — nothing is ever deleted.</div>
+    <div id="audit-header" style="display:flex;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:6px 0;border-bottom:2px solid var(--border);color:var(--text3)"><span style="min-width:145px">Timestamp</span><span style="min-width:80px">User</span><span style="min-width:90px">Module</span><span style="min-width:80px">Action</span><span>Details</span></div>
+    <div id="audit-log"></div>
+  </div>
+</div>
+
+<!-- USERS (admin only) -->
+<div class="page" id="page-users">
+  <div class="card">
+    <div class="card-header"><span class="card-title">System Users — Access Management</span></div>
+    <div class="alert al-i">Only admin users can change roles. Roles: <strong>admin</strong> = full access | <strong>treasurer</strong> = read/write | <strong>secretary</strong> = read/write members | <strong>viewer</strong> = read only</div>
+    <div class="tbl-wrap"><table><thead><tr><th></th><th>Name</th><th>Email</th><th>Role</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+  </div>
+</div>
+
+</div><!-- main -->
+</div><!-- app -->
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ─── STATE & CONFIG ───────────────────────────────────────────────────────────
+const API = '';  // same origin
+let token = localStorage.getItem('sacco_token') || '';
+let currentUser = null;
+let editingMemberId = null;
+let scheduleData = null;
+
+// ─── CLOCK ────────────────────────────────────────────────────────────────────
+function clock() {
+  const n = new Date();
+  document.getElementById('clock-display').textContent =
+    n.toLocaleDateString('en-UG',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' | ' +
+    n.toLocaleTimeString('en-UG');
+}
+setInterval(clock, 1000); clock();
+
+// ─── AUTH HELPERS ─────────────────────────────────────────────────────────────
+function getHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+}
+async function apiFetch(path, opts = {}) {
+  opts.headers = { ...getHeaders(), ...(opts.headers || {}) };
+  const res = await fetch(API + path, opts);
+  if (res.status === 401) { logout(); return null; }
+  return res;
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function loginWithGoogle() {
+  window.location.href = '/auth/google';
+}
+function logout() {
+  if (token) apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
+  localStorage.removeItem('sacco_token');
+  token = '';
+  currentUser = null;
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// Check for token in URL (after OAuth redirect)
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = params.get('token');
+  if (urlToken) {
+    token = urlToken;
+    localStorage.setItem('sacco_token', token);
+    window.history.replaceState({}, '', '/app');
+  }
+
+  // Handle error params
+  const err = params.get('error');
+  if (err) {
+    const el = document.getElementById('login-error');
+    const msgs = { not_allowed: 'Your email is not authorised. Contact the Treasurer.', auth_failed: 'Authentication failed. Please try again.', account_suspended: 'Your account has been suspended.', server_error: 'Server error. Please try again.' };
+    el.textContent = msgs[err] || 'Login error. Please try again.';
+    el.style.display = 'block';
+    document.getElementById('login-page').style.display = 'flex';
+    return;
+  }
+
+  if (!token) { document.getElementById('login-page').style.display = 'flex'; return; }
+
+  // Verify token
+  const res = await fetch('/auth/verify', { headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok) { logout(); return; }
+  const data = await res.json();
+  if (!data.authenticated) { logout(); return; }
+  currentUser = data.user;
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('user-name').textContent = currentUser.name;
+  document.getElementById('user-role').textContent = currentUser.role;
+  if (currentUser.picture) document.getElementById('user-pic').src = currentUser.picture;
+  // Show admin-only tabs
+  if (['admin','treasurer'].includes(currentUser.role)) {
+    document.getElementById('nav-audit').style.display = 'block';
+  }
+  if (currentUser.role === 'admin') {
+    document.getElementById('nav-users').style.display = 'block';
+  }
+  loadDashboard();
+  populateSelects();
+  renderStaticFinancials();
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pg = document.getElementById('page-' + btn.dataset.page);
+    if (pg) pg.classList.add('active');
+    if (btn.dataset.page === 'members') loadMembers();
+    if (btn.dataset.page === 'loans') loadLoans();
+    if (btn.dataset.page === 'audit') loadAudit();
+    if (btn.dataset.page === 'users') loadUsers();
+  });
+});
+
+function showSub(page, sub) {
+  const pageEl = document.getElementById('page-' + page);
+  if (!pageEl) return;
+  pageEl.querySelectorAll('[id^="sub-"]').forEach(s => s.style.display = 'none');
+  const s = document.getElementById('sub-' + sub);
+  if (s) s.style.display = 'block';
+  pageEl.querySelectorAll('.stab').forEach(t => {
+    t.classList.toggle('active', t.dataset.sub === sub);
+  });
+}
+document.querySelectorAll('.stab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const page = tab.closest('.page');
+    if (!page) return;
+    page.querySelectorAll('[id^="sub-"]').forEach(s => s.style.display = 'none');
+    page.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const s = document.getElementById('sub-' + tab.dataset.sub);
+    if (s) s.style.display = 'block';
+  });
+});
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.animation = 'tout .4s forwards'; setTimeout(() => t.remove(), 400); }, 3000);
+}
+
+// ─── FORMAT ───────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n == null || isNaN(n)) return '─';
+  return Math.round(n).toLocaleString('en-UG');
+}
+function fmtK(n) {
+  if (n == null || isNaN(n)) return '─';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(0) + 'K';
+  return fmt(n);
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const res = await apiFetch('/api/reports/dashboard');
+  if (!res) return;
+  const d = await res.json();
+  document.getElementById('kpi-active-members').textContent = d.members?.active || '─';
+  document.getElementById('kpi-savings').textContent = fmtK(d.savings?.total_savings);
+  document.getElementById('kpi-disbursed').textContent = fmtK(d.loans?.total_disbursed);
+  document.getElementById('kpi-outstanding').textContent = fmtK(d.loans?.outstanding);
+  document.getElementById('kpi-defaulted').textContent = d.loans?.defaulted_loans || '0';
+  document.getElementById('kpi-month-sav').textContent = fmtK(d.savings?.this_month);
+  document.getElementById('dash-loans').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="flex" style="justify-content:space-between"><span style="font-size:12px">Active loans</span><span style="font-weight:700;color:var(--primary)">${d.loans?.active_loans || 0}</span></div>
+      <div class="flex" style="justify-content:space-between"><span style="font-size:12px">Cleared loans</span><span style="font-weight:700;color:var(--green)">${d.loans?.cleared_loans || 0}</span></div>
+      <div class="flex" style="justify-content:space-between"><span style="font-size:12px">Outstanding balance</span><span style="font-weight:700;color:var(--orange)">UGX ${fmt(d.loans?.outstanding)}</span></div>
+      <div class="flex" style="justify-content:space-between"><span style="font-size:12px">Expenditure this month</span><span style="font-weight:700;color:var(--red)">UGX ${fmt(d.expenditure?.this_month_exp)}</span></div>
+    </div>`;
+  // Load recent audit
+  const ar = await apiFetch('/api/audit?limit=5');
+  if (ar) {
+    const al = await ar.json();
+    document.getElementById('dash-audit').innerHTML = Array.isArray(al) ? al.map(a =>
+      `<div class="arow"><span class="ats">${a.created_at?.substring(0,16)}</span><span class="amod">${a.module}</span><span class="aact">${a.description}</span></div>`
+    ).join('') : '<div class="text-m">No recent activity.</div>';
+  }
+}
+
+// ─── MEMBERS ──────────────────────────────────────────────────────────────────
+async function loadMembers() {
+  const search = document.getElementById('m-search')?.value || '';
+  const type = document.getElementById('m-f-type')?.value || '';
+  const status = document.getElementById('m-f-status')?.value || '';
+  let url = '/api/members?';
+  if (search) url += 'search=' + encodeURIComponent(search) + '&';
+  if (type) url += 'type=' + encodeURIComponent(type) + '&';
+  if (status) url += 'status=' + encodeURIComponent(status);
+  const res = await apiFetch(url);
+  if (!res) return;
+  const members = await res.json();
+  const tb = document.getElementById('members-tbody');
+  tb.innerHTML = members.map(m => `
+    <tr>
+      <td><strong>${m.reg_no}</strong></td>
+      <td>${m.full_name}</td>
+      <td><span class="badge ${m.staff_type === 'Permanent' ? 'perm' : 'semi'}">${m.staff_type}</span></td>
+      <td>${m.date_joined?.substring(0,10) || '─'}</td>
+      <td class="r">UGX ${fmt(m.monthly_savings)}</td>
+      <td>${m.phone || '─'}</td>
+      <td><span class="badge ${m.status === 'Active' ? 'active' : 'defaulted'}">${m.status}</span></td>
+      <td><button class="btn btn-sm btn-o" onclick="editMember(${m.id})">Edit</button></td>
+    </tr>`).join('');
+  populateStmtSelect(members);
+}
+
+async function editMember(id) {
+  const res = await apiFetch('/api/members/' + id);
+  if (!res) return;
+  const m = await res.json();
+  editingMemberId = id;
+  document.getElementById('mf-name').value = m.full_name;
+  document.getElementById('mf-reg').value = m.reg_no;
+  document.getElementById('mf-nid').value = m.national_id || '';
+  document.getElementById('mf-phone').value = m.phone || '';
+  document.getElementById('mf-email').value = m.email || '';
+  document.getElementById('mf-dept').value = m.department || '';
+  document.getElementById('mf-type').value = m.staff_type;
+  document.getElementById('mf-date').value = m.date_joined?.substring(0,10) || '';
+  document.getElementById('mf-savings').value = m.monthly_savings;
+  document.getElementById('mf-shares').value = m.share_contribution;
+  document.getElementById('mf-regfee').value = m.registration_fee;
+  document.getElementById('mf-status').value = m.status;
+  document.getElementById('mf-nok').value = m.next_of_kin || '';
+  document.getElementById('mf-remarks').value = m.remarks || '';
+  document.getElementById('m-edit-alert').style.display = 'block';
+  document.getElementById('m-form-title').textContent = 'Edit Member: ' + m.full_name;
+  showSub('members', 'm-form');
+}
+
+function newMember() { clearMemberForm(); showSub('members', 'm-form'); }
+function clearMemberForm() {
+  editingMemberId = null;
+  ['mf-name','mf-reg','mf-nid','mf-phone','mf-email','mf-dept','mf-savings','mf-nok','mf-remarks'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('mf-type').value = '';
+  document.getElementById('mf-status').value = 'Active';
+  document.getElementById('mf-shares').value = 40000;
+  document.getElementById('mf-regfee').value = 40000;
+  document.getElementById('mf-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('m-edit-alert').style.display = 'none';
+  document.getElementById('m-form-title').textContent = 'Register New Member';
+}
+
+async function saveMember() {
+  const data = {
+    full_name: document.getElementById('mf-name').value.trim(),
+    reg_no: document.getElementById('mf-reg').value.trim(),
+    national_id: document.getElementById('mf-nid').value.trim(),
+    phone: document.getElementById('mf-phone').value.trim(),
+    email: document.getElementById('mf-email').value.trim(),
+    department: document.getElementById('mf-dept').value.trim(),
+    staff_type: document.getElementById('mf-type').value,
+    date_joined: document.getElementById('mf-date').value,
+    monthly_savings: parseInt(document.getElementById('mf-savings').value) || 0,
+    share_contribution: parseInt(document.getElementById('mf-shares').value) || 40000,
+    registration_fee: parseInt(document.getElementById('mf-regfee').value) || 40000,
+    status: document.getElementById('mf-status').value,
+    next_of_kin: document.getElementById('mf-nok').value.trim(),
+    remarks: document.getElementById('mf-remarks').value.trim()
+  };
+  if (!data.full_name || !data.reg_no || !data.staff_type || !data.date_joined || !data.monthly_savings)
+    return toast('Fill all required fields (*)', 'err');
+  const method = editingMemberId ? 'PUT' : 'POST';
+  const url = editingMemberId ? '/api/members/' + editingMemberId : '/api/members';
+  const res = await apiFetch(url, { method, body: JSON.stringify(data) });
+  if (!res) return;
+  if (!res.ok) { const e = await res.json(); toast(e.error || 'Error saving member', 'err'); return; }
+  toast(editingMemberId ? 'Member updated' : 'Member registered', 'ok');
+  clearMemberForm();
+  showSub('members', 'm-list');
+  loadMembers();
+  populateSelects();
+}
+
+function populateStmtSelect(members) {
+  const sel = document.getElementById('stmt-member');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Choose member...</option>' + members.map(m => `<option value="${m.id}">${m.full_name} (${m.reg_no})</option>`).join('');
+}
+
+async function generateStatement() {
+  const memberId = document.getElementById('stmt-member').value;
+  if (!memberId) return toast('Select a member', 'err');
+  const from = document.getElementById('stmt-from').value;
+  const to = document.getElementById('stmt-to').value;
+  const res = await apiFetch(`/api/members/${memberId}/statement?from=${from}&to=${to}`);
+  if (!res) return;
+  const d = await res.json();
+  const m = d.member;
+  document.getElementById('stmt-output').innerHTML = `
+    <div style="border:1px solid var(--border);padding:16px;border-radius:var(--radius-lg)">
+      <div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--primary)">
+        <div style="font-family:var(--font);font-size:16px;font-weight:bold;color:var(--primary)">KYANGABI CRATER RESORT STAFF SACCO</div>
+        <div style="font-size:12px">Member Account Statement &nbsp;|&nbsp; ${from} to ${to}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:12px">
+        <div><strong>Name:</strong> ${m.full_name}</div><div><strong>Reg. No.:</strong> ${m.reg_no}</div>
+        <div><strong>Staff Type:</strong> ${m.staff_type}</div><div><strong>Monthly Savings:</strong> UGX ${fmt(m.monthly_savings)}</div>
+        <div><strong>Joined:</strong> ${m.date_joined?.substring(0,10)}</div><div><strong>Status:</strong> <span class="badge active">${m.status}</span></div>
+      </div>
+      <strong style="font-size:11px;text-transform:uppercase;letter-spacing:.4px">Loans</strong>
+      <div class="tbl-wrap" style="margin-top:6px">
+        <table><thead><tr><th>Loan ID</th><th>Type</th><th>Principal</th><th>Monthly</th><th>Balance</th><th>Status</th></tr></thead>
+        <tbody>${d.loans.length ? d.loans.map(l => `<tr><td>${l.loan_ref}</td><td>${l.loan_type}</td><td class="r">${fmt(l.principal)}</td><td class="r">${fmt(l.monthly_instalment)}</td><td class="r">${fmt(l.balance)}</td><td><span class="badge ${l.status==='Active'?'active':l.status==='Cleared'?'cleared':'defaulted'}">${l.status}</span></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--text3)">No loans on record</td></tr>'}</tbody></table>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text3);text-align:center">Generated on ${new Date().toLocaleString()} by ${currentUser?.name}</div>
+    </div>`;
+}
+
+// ─── LOANS ────────────────────────────────────────────────────────────────────
+async function loadLoans() {
+  const status = document.getElementById('l-f-status')?.value || '';
+  let url = '/api/loans';
+  if (status) url += '?status=' + status;
+  const res = await apiFetch(url);
+  if (!res) return;
+  const loans = await res.json();
+  document.getElementById('loans-tbody').innerHTML = loans.map(l => `
+    <tr>
+      <td><strong>${l.loan_ref}</strong></td>
+      <td>${l.full_name}</td>
+      <td>${l.loan_type}</td>
+      <td>${l.loan_date?.substring(0,10)}</td>
+      <td class="r">${fmt(l.principal)}</td>
+      <td class="r">${fmt(l.interest_amount)}</td>
+      <td class="r">${fmt(l.monthly_instalment)}</td>
+      <td class="r ${l.balance > 0 ? 'text-d' : 'text-s'}">${fmt(l.balance)}</td>
+      <td><span class="badge ${l.status==='Active'?'active':l.status==='Cleared'?'cleared':'defaulted'}">${l.status}</span></td>
+      <td>
+        <button class="btn btn-sm btn-o" onclick="recordRepay(${l.id},'${l.loan_ref}',${l.balance})">Repay</button>
+        <button class="btn btn-sm btn-o" onclick="viewSchedule(${l.id})" style="margin-left:3px">Schedule</button>
+      </td>
+    </tr>`).join('');
+}
+
+function calcLoan() {
+  const p = parseFloat(document.getElementById('lf-principal')?.value) || 0;
+  const r = (parseFloat(document.getElementById('lf-rate')?.value) || 15) / 100;
+  const d = parseInt(document.getElementById('lf-dur')?.value) || 12;
+  const interest = p * (r/12) * d;
+  const total = p + interest;
+  const install = total / d;
+  if (document.getElementById('lf-install')) document.getElementById('lf-install').value = fmt(Math.round(install));
+  if (document.getElementById('lf-tint')) document.getElementById('lf-tint').value = fmt(Math.round(interest));
+  if (document.getElementById('lf-total')) document.getElementById('lf-total').value = fmt(Math.round(total));
+  // Preview schedule
+  scheduleData = { principal: p, rate: r, dur: d };
+}
+
+async function submitLoan() {
+  const member_id = document.getElementById('lf-member')?.value;
+  const loan_date = document.getElementById('lf-date')?.value;
+  const principal = parseFloat(document.getElementById('lf-principal')?.value) || 0;
+  const annual_rate = parseFloat(document.getElementById('lf-rate')?.value) || 15;
+  const duration_months = parseInt(document.getElementById('lf-dur')?.value) || 12;
+  if (!member_id || !loan_date || !principal) return toast('Fill required fields', 'err');
+  const data = { member_id, loan_type: document.getElementById('lf-type').value, loan_date, principal, annual_rate, duration_months,
+    guarantor_id: document.getElementById('lf-guarantor').value || null,
+    purpose: document.getElementById('lf-purpose').value,
+    approved_by: document.getElementById('lf-approved').value };
+  const res = await apiFetch('/api/loans', { method: 'POST', body: JSON.stringify(data) });
+  if (!res) return;
+  if (!res.ok) { const e = await res.json(); toast(e.error, 'err'); return; }
+  const loan = await res.json();
+  toast('Loan ' + loan.loan_ref + ' created', 'ok');
+  clearLoanForm();
+  loadLoans();
+  viewSchedule(loan.id);
+}
+
+async function viewSchedule(id) {
+  showSub('loans', 'l-sched');
+  const res = await apiFetch('/api/loans/' + id + '/schedule');
+  if (!res) return;
+  const { loan, schedule } = await res.json();
+  document.getElementById('loan-sched-out').innerHTML = `
+    <div style="margin-bottom:10px;font-size:12px"><strong>${loan.full_name}</strong> — ${loan.loan_ref} | Principal: UGX ${fmt(loan.principal)} | Rate: ${loan.annual_rate}%/yr | ${loan.duration_months} months</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Date</th><th>Payment (UGX)</th><th>Principal (UGX)</th><th>Interest (UGX)</th><th>Balance (UGX)</th></tr></thead>
+      <tbody>${schedule.map(r => `<tr><td>${r.period}</td><td>${r.date}</td><td class="r">${fmt(r.payment)}</td><td class="r">${fmt(r.principal)}</td><td class="r">${fmt(r.interest)}</td><td class="r">${fmt(r.balance)}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+async function recordRepay(id, ref, balance) {
+  const amount = parseFloat(prompt(`Repayment for ${ref}\nCurrent balance: UGX ${fmt(balance)}\n\nEnter amount paid:`));
+  if (!amount || isNaN(amount) || amount <= 0) return;
+  const res = await apiFetch('/api/loans/' + id + '/repay', {
+    method: 'POST', body: JSON.stringify({ amount_paid: amount, payment_date: new Date().toISOString().split('T')[0] })
+  });
+  if (!res) return;
+  if (!res.ok) { const e = await res.json(); toast(e.error, 'err'); return; }
+  toast('Repayment recorded for ' + ref, 'ok');
+  loadLoans();
+}
+
+function clearLoanForm() {
+  ['lf-principal','lf-purpose','lf-approved','lf-install','lf-tint','lf-total'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('lf-rate').value = 15;
+  document.getElementById('lf-dur').value = 12;
+  document.getElementById('lf-date').value = new Date().toISOString().split('T')[0];
+}
+
+// ─── SAVINGS ──────────────────────────────────────────────────────────────────
+async function loadSavingsEntry() {
+  const year = document.getElementById('sav-year').value;
+  const month = document.getElementById('sav-month').value;
+  const res = await apiFetch('/api/members?status=Active');
+  if (!res) return;
+  const members = await res.json();
+  // Get existing entries
+  const er = await apiFetch(`/api/savings?year=${year}&month=${month}`);
+  const existing = er ? await er.json() : [];
+  const existMap = {};
+  (Array.isArray(existing) ? existing : []).forEach(e => { existMap[e.member_id] = e; });
+  document.getElementById('sav-entry-wrap').innerHTML = `
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Name</th><th>Type</th><th>Expected (UGX)</th><th>Actual Savings</th><th>Shares/Reg</th></tr></thead>
+      <tbody>${members.map(m => `
+        <tr>
+          <td>${m.full_name}</td>
+          <td><span class="badge ${m.staff_type==='Permanent'?'perm':'semi'}">${m.staff_type}</span></td>
+          <td class="r">${fmt(m.monthly_savings)}</td>
+          <td><input type="number" value="${existMap[m.id]?.amount || m.monthly_savings}" min="0" class="sav-input" data-id="${m.id}" style="width:110px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:right"></td>
+          <td><input type="number" value="${existMap[m.id]?.share_amount || 0}" min="0" class="share-input" style="width:90px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:right"></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+    <div class="btn-row"><button class="btn btn-p" onclick="saveSavingsEntry(${year},${month})">Save Savings Entry</button></div>`;
+}
+
+async function saveSavingsEntry(year, month) {
+  const entries = [];
+  document.querySelectorAll('.sav-input').forEach((inp, i) => {
+    const shareInp = document.querySelectorAll('.share-input')[i];
+    entries.push({ member_id: parseInt(inp.dataset.id), amount: parseInt(inp.value)||0, share_amount: parseInt(shareInp?.value)||0 });
+  });
+  const res = await apiFetch('/api/savings/bulk', { method: 'POST', body: JSON.stringify({ year, month, entries }) });
+  if (!res) return;
+  if (!res.ok) { const e = await res.json(); toast(e.error, 'err'); return; }
+  toast(`Savings saved for ${year}/${month}`, 'ok');
+}
+
+async function loadLedger() {
+  const year = document.getElementById('ledger-year').value;
+  const res = await apiFetch('/api/savings/ledger/' + year);
+  if (!res) return;
+  const rows = await res.json();
+  document.getElementById('ledger-tbody').innerHTML = rows.map(r => `
+    <tr><td>${r.full_name}</td>
+    ${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov_m','dec_m'].map(m =>
+      `<td class="r" style="font-size:11px">${r[m] > 0 ? fmtK(r[m]) : '─'}</td>`).join('')}
+    <td class="r" style="font-weight:700;color:var(--primary)">${fmt(r.annual_total)}</td></tr>`).join('');
+}
+
+// ─── DEDUCTIONS ───────────────────────────────────────────────────────────────
+async function loadDeductions() {
+  const year = document.getElementById('ded-year').value;
+  const month = document.getElementById('ded-month').value;
+  // Get active members
+  const mr = await apiFetch('/api/members?status=Active');
+  if (!mr) return;
+  const members = await mr.json();
+  // Get active loans per member
+  const lr = await apiFetch('/api/loans?status=Active');
+  const loans = lr ? await lr.json() : [];
+  const loanMap = {};
+  (Array.isArray(loans) ? loans : []).forEach(l => {
+    if (!loanMap[l.member_id]) loanMap[l.member_id] = [];
+    loanMap[l.member_id].push(l);
+  });
+  let totals = { s:0, sh:0, l:0, q:0, g:0, m:0, o:0, t:0 };
+  document.getElementById('ded-tbody').innerHTML = members.map((mem, i) => {
+    const mloans = loanMap[mem.id] || [];
+    const lt = mloans.find(l => l.loan_type === 'Long Term');
+    const ql = mloans.find(l => l.loan_type === 'Quick Loan');
+    const ltv = lt ? lt.monthly_instalment : 0;
+    const qlv = ql ? ql.monthly_instalment : 0;
+    const mab = 10000;
+    const sav = mem.monthly_savings;
+    const total = sav + ltv + qlv + mab;
+    totals.s+=sav; totals.l+=ltv; totals.q+=qlv; totals.m+=mab; totals.t+=total;
+    return `<tr>
+      <td>${i+1}</td><td style="font-weight:500">${mem.full_name}</td>
+      <td><span class="badge ${mem.staff_type==='Permanent'?'perm':'semi'}" style="font-size:9px">${mem.staff_type.substring(0,4)}</span></td>
+      ${['sav','sh','lt','ql','g','mab','o'].map((cl,ci) => {
+        const vals = [sav,0,ltv,qlv,0,mab,0];
+        return `<td><input type="number" value="${vals[ci]}" min="0" class="ded-inp" style="width:85px;padding:3px 5px;border:1px solid var(--border);border-radius:3px;text-align:right;font-size:11px" onchange="recalcDedRow(this)"></td>`;
+      }).join('')}
+      <td class="r" style="font-weight:700;color:var(--primary)">${fmt(total)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dt-s').textContent = fmt(totals.s);
+  document.getElementById('dt-sh').textContent = '─';
+  document.getElementById('dt-l').textContent = fmt(totals.l);
+  document.getElementById('dt-q').textContent = fmt(totals.q);
+  document.getElementById('dt-g').textContent = '─';
+  document.getElementById('dt-m').textContent = fmt(totals.m);
+  document.getElementById('dt-o').textContent = '─';
+  document.getElementById('dt-t').textContent = fmt(totals.t);
+}
+function recalcDedRow(el) {
+  const row = el.closest('tr');
+  let total = 0;
+  row.querySelectorAll('.ded-inp').forEach(i => total += parseInt(i.value)||0);
+  row.cells[row.cells.length - 1].textContent = fmt(total);
+}
+async function finaliseDeductions() {
+  const year = document.getElementById('ded-year').value;
+  const month = document.getElementById('ded-month').value;
+  if (!confirm(`Finalise deductions for ${year}/${month}? This will lock the entries.`)) return;
+  const res = await apiFetch('/api/deductions/finalise', { method: 'POST', body: JSON.stringify({ year, month }) });
+  if (!res) return;
+  toast(`Deductions for ${year}/${month} finalised`, 'ok');
+}
+
+// ─── EXPENDITURE ─────────────────────────────────────────────────────────────
+async function saveExpenditure() {
+  const data = {
+    transaction_date: document.getElementById('ef-date').value,
+    category: document.getElementById('ef-cat').value,
+    sub_category: document.getElementById('ef-subcat').value,
+    amount: parseFloat(document.getElementById('ef-amount').value)||0,
+    description: document.getElementById('ef-desc').value.trim(),
+    payee: document.getElementById('ef-payee').value.trim(),
+    payment_method: document.getElementById('ef-method').value,
+    voucher_no: document.getElementById('ef-voucher').value.trim(),
+    approved_by: document.getElementById('ef-approver').value
+  };
+  if (!data.transaction_date||!data.category||!data.amount||!data.description)
+    return toast('Fill required fields', 'err');
+  const res = await apiFetch('/api/expenditures', { method: 'POST', body: JSON.stringify(data) });
+  if (!res) return;
+  if (!res.ok) { const e = await res.json(); toast(e.error, 'err'); return; }
+  const exp = await res.json();
+  toast('Expenditure recorded: ' + exp.ref_no, 'ok');
+  clearExpForm();
+  loadExpenditures();
+}
+function clearExpForm() {
+  ['ef-date','ef-subcat','ef-amount','ef-payee','ef-voucher','ef-desc'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('ef-cat').value = '';
+  document.getElementById('ef-date').value = new Date().toISOString().split('T')[0];
+}
+async function loadExpenditures() {
+  const from = document.getElementById('ef-from')?.value || '';
+  const to = document.getElementById('ef-to')?.value || '';
+  let url = '/api/expenditures?';
+  if (from) url += 'from=' + from + '&';
+  if (to) url += 'to=' + to;
+  const res = await apiFetch(url);
+  if (!res) return;
+  const exps = await res.json();
+  document.getElementById('exp-tbody').innerHTML = (Array.isArray(exps) ? exps : []).map(e => `
+    <tr>
+      <td><strong>${e.ref_no}</strong></td>
+      <td>${e.transaction_date?.substring(0,10)}</td>
+      <td>${e.category}</td>
+      <td>${e.description?.substring(0,40)}...</td>
+      <td>${e.payee||'─'}</td>
+      <td>${e.payment_method}</td>
+      <td class="r"><strong>${fmt(e.amount)}</strong></td>
+      <td>${e.approved_by||'─'}</td>
+      <td><button class="btn btn-sm btn-o" onclick="editExp(${e.id})">Edit</button></td>
+    </tr>`).join('');
+}
+async function loadExpSummary() {
+  const month = document.getElementById('esum-month').value;
+  const year = document.getElementById('esum-year').value;
+  const res = await apiFetch(`/api/expenditures/summary/${year}/${month}`);
+  if (!res) return;
+  const rows = await res.json();
+  const max = Math.max(...(Array.isArray(rows) ? rows : []).map(r => r.total));
+  document.getElementById('exp-sum-out').innerHTML = (Array.isArray(rows) ? rows : []).map(r => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="min-width:180px;font-size:11px;color:var(--text2)">${r.category}</span>
+      <div style="flex:1;height:16px;background:var(--surface2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${max?(r.total/max*100):0}%;background:var(--primary);border-radius:3px"></div>
+      </div>
+      <span style="min-width:90px;text-align:right;font-size:11px;font-weight:600">UGX ${fmt(r.total)}</span>
+    </div>`).join('');
+}
+
+// ─── FINANCIAL STATEMENTS (static for now) ──────────────────────────────────
+function renderStaticFinancials() {
+  document.getElementById('is-out').innerHTML = `<div class="tbl-wrap"><table class="fstmt">
+    <thead><tr><th>Description</th><th class="r">2025 (UGX)</th><th class="r">2024 (UGX)</th></tr></thead>
+    <tbody>
+      <tr class="sec"><td colspan="3">INCOME</td></tr>
+      <tr class="ind"><td>Loan Interest Income</td><td class="r">10,284,000</td><td class="r">9,840,000</td></tr>
+      <tr class="ind"><td>Registration & Share Fees</td><td class="r">560,000</td><td class="r">480,000</td></tr>
+      <tr class="ind"><td>MABUGO Contributions</td><td class="r">930,000</td><td class="r">840,000</td></tr>
+      <tr class="ind"><td>Fines & Penalties</td><td class="r">75,000</td><td class="r">60,000</td></tr>
+      <tr class="sub"><td><strong>TOTAL INCOME</strong></td><td class="r"><strong>11,849,000</strong></td><td class="r"><strong>11,220,000</strong></td></tr>
+      <tr class="sec"><td colspan="3">EXPENDITURE</td></tr>
+      <tr class="ind"><td>Operational Expenses</td><td class="r">600,000</td><td class="r">580,000</td></tr>
+      <tr class="ind"><td>Meeting Allowances</td><td class="r">600,000</td><td class="r">600,000</td></tr>
+      <tr class="ind"><td>Stationery & Printing</td><td class="r">180,000</td><td class="r">170,000</td></tr>
+      <tr class="ind"><td>Bank Charges</td><td class="r">120,000</td><td class="r">115,000</td></tr>
+      <tr class="ind"><td>Audit Fees</td><td class="r">300,000</td><td class="r">300,000</td></tr>
+      <tr class="ind"><td>Welfare & Benevolence</td><td class="r">300,000</td><td class="r">200,000</td></tr>
+      <tr class="ind"><td>Miscellaneous</td><td class="r">130,000</td><td class="r">100,000</td></tr>
+      <tr class="sub"><td><strong>TOTAL EXPENDITURE</strong></td><td class="r"><strong>2,230,000</strong></td><td class="r"><strong>2,065,000</strong></td></tr>
+      <tr class="tot"><td><strong>NET SURPLUS</strong></td><td class="r text-s"><strong>9,619,000</strong></td><td class="r text-s"><strong>9,155,000</strong></td></tr>
+    </tbody></table></div>`;
+  document.getElementById('bs-out').innerHTML = `<div class="two-col">
+    <div><div class="tbl-wrap"><table class="fstmt"><thead><tr><th>ASSETS</th><th class="r">UGX</th></tr></thead><tbody>
+      <tr class="sec"><td colspan="2">Current Assets</td></tr>
+      <tr class="ind"><td>Cash in Hand</td><td class="r">4,250,000</td></tr>
+      <tr class="ind"><td>Cash at Bank</td><td class="r">52,340,000</td></tr>
+      <tr class="ind"><td>Mobile Money</td><td class="r">1,200,000</td></tr>
+      <tr class="ind"><td>Interest Receivable</td><td class="r">2,140,000</td></tr>
+      <tr class="sub"><td><strong>Total Current</strong></td><td class="r"><strong>59,930,000</strong></td></tr>
+      <tr class="sec"><td colspan="2">Non-Current Assets</td></tr>
+      <tr class="ind"><td>Loans Receivable (LT)</td><td class="r">34,180,000</td></tr>
+      <tr class="ind"><td>Loans Receivable (QL)</td><td class="r">480,000</td></tr>
+      <tr class="sub"><td><strong>Total Non-Current</strong></td><td class="r"><strong>34,660,000</strong></td></tr>
+      <tr class="tot"><td><strong>TOTAL ASSETS</strong></td><td class="r"><strong>94,590,000</strong></td></tr>
+    </tbody></table></div></div>
+    <div><div class="tbl-wrap"><table class="fstmt"><thead><tr><th>LIABILITIES & EQUITY</th><th class="r">UGX</th></tr></thead><tbody>
+      <tr class="sec"><td colspan="2">Liabilities</td></tr>
+      <tr class="ind"><td>Member Savings Deposits</td><td class="r">78,450,000</td></tr>
+      <tr class="ind"><td>Share Capital</td><td class="r">8,460,000</td></tr>
+      <tr class="ind"><td>MABUGO Fund</td><td class="r">1,840,000</td></tr>
+      <tr class="sub"><td><strong>Total Liabilities</strong></td><td class="r"><strong>88,750,000</strong></td></tr>
+      <tr class="sec"><td colspan="2">Equity</td></tr>
+      <tr class="ind"><td>Accumulated Surplus</td><td class="r">5,840,000</td></tr>
+      <tr class="tot"><td><strong>TOTAL L & E</strong></td><td class="r"><strong>94,590,000</strong></td></tr>
+    </tbody></table></div></div></div>`;
+  document.getElementById('cf-out').innerHTML = `<div class="tbl-wrap"><table class="fstmt">
+    <thead><tr><th>Description</th><th class="r">2025 (UGX)</th></tr></thead><tbody>
+      <tr class="sec"><td colspan="2">Operating Activities</td></tr>
+      <tr class="ind"><td>Savings from members</td><td class="r">30,160,000</td></tr>
+      <tr class="ind"><td>Interest received</td><td class="r">10,284,000</td></tr>
+      <tr class="ind"><td>Fees & MABUGO received</td><td class="r">1,490,000</td></tr>
+      <tr class="ind"><td>Operational expenses paid</td><td class="r neg">(2,230,000)</td></tr>
+      <tr class="sub"><td><strong>Net Cash from Operations</strong></td><td class="r text-s"><strong>39,704,000</strong></td></tr>
+      <tr class="sec"><td colspan="2">Lending Activities</td></tr>
+      <tr class="ind"><td>Loans disbursed</td><td class="r neg">(22,450,000)</td></tr>
+      <tr class="ind"><td>Loan repayments received</td><td class="r">18,840,000</td></tr>
+      <tr class="sub"><td><strong>Net Cash from Lending</strong></td><td class="r neg"><strong>(3,610,000)</strong></td></tr>
+      <tr class="tot"><td><strong>NET INCREASE IN CASH</strong></td><td class="r text-s"><strong>36,094,000</strong></td></tr>
+      <tr class="ind"><td>Cash at start of year</td><td class="r">21,696,000</td></tr>
+      <tr class="tot"><td><strong>CASH AT END OF YEAR</strong></td><td class="r text-s"><strong>57,790,000</strong></td></tr>
+    </tbody></table></div>`;
+}
+
+async function loadTrialBalance() {
+  const year = document.getElementById('tb-year').value;
+  const res = await apiFetch('/api/reports/trial-balance/' + year);
+  if (!res) return;
+  const d = await res.json();
+  const expRows = (d.expenditures || []).map(e =>
+    `<tr class="ind"><td>Expenditure</td><td>${e.category}</td><td class="r">${fmt(e.total)}</td><td class="r">─</td></tr>`).join('');
+  document.getElementById('tb-out').innerHTML = `<div class="tbl-wrap"><table class="fstmt">
+    <thead><tr><th>Code</th><th>Account</th><th class="r">Debit (UGX)</th><th class="r">Credit (UGX)</th></tr></thead>
+    <tbody>
+      <tr class="sec"><td colspan="4">ASSETS</td></tr>
+      <tr class="ind"><td>1100</td><td>Loans Receivable (Outstanding)</td><td class="r">${fmt(d.loans?.outstanding)}</td><td class="r">─</td></tr>
+      <tr class="sec"><td colspan="4">LIABILITIES</td></tr>
+      <tr class="ind"><td>2001</td><td>Member Savings Deposits</td><td class="r">─</td><td class="r">${fmt(d.savings_total?.total)}</td></tr>
+      <tr class="sec"><td colspan="4">INCOME</td></tr>
+      <tr class="ind"><td>3001</td><td>Loan Interest Income</td><td class="r">─</td><td class="r">${fmt(d.income?.interest_income)}</td></tr>
+      <tr class="sec"><td colspan="4">EXPENDITURE</td></tr>
+      ${expRows}
+    </tbody></table></div>`;
+}
+
+// ─── REPORTS ──────────────────────────────────────────────────────────────────
+async function generateWeeklyReport() {
+  const from = document.getElementById('rw-from').value;
+  const to = document.getElementById('rw-to').value;
+  if (!from || !to) return toast('Select date range', 'err');
+  const res = await apiFetch(`/api/reports/dashboard`);
+  const d = res ? await res.json() : {};
+  document.getElementById('weekly-out').innerHTML = `<div class="card" style="background:var(--surface2)">
+    <div class="flex-b"><span class="card-title">Weekly Report: ${from} — ${to}</span><span class="stamp">Generated: ${new Date().toLocaleString()}</span></div>
+    <div class="kpi-grid" style="margin-top:12px">
+      <div class="kpi g"><div class="kpi-label">Active Members</div><div class="kpi-value">${d.members?.active||0}</div></div>
+      <div class="kpi"><div class="kpi-label">Active Loans</div><div class="kpi-value">${d.loans?.active_loans||0}</div></div>
+      <div class="kpi a"><div class="kpi-label">Outstanding</div><div class="kpi-value">UGX ${fmtK(d.loans?.outstanding)}</div></div>
+      <div class="kpi r"><div class="kpi-label">Defaulted</div><div class="kpi-value">${d.loans?.defaulted_loans||0}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Prepared by: ${currentUser?.name} | Report period: ${from} to ${to}</div>
+  </div>`;
+}
+async function generateMonthlyReport() {
+  const month = document.getElementById('rm-month').value;
+  const year = document.getElementById('rm-year').value;
+  const res = await apiFetch(`/api/reports/monthly/${year}/${month}`);
+  const d = res ? await res.json() : {};
+  document.getElementById('monthly-out').innerHTML = `<div class="card" style="background:var(--surface2)">
+    <div class="flex-b"><span class="card-title">Monthly Report: Month ${month}/${year}</span><span class="stamp">Generated: ${new Date().toLocaleString()}</span></div>
+    <div class="kpi-grid" style="margin-top:12px">
+      <div class="kpi g"><div class="kpi-label">Savings Collected</div><div class="kpi-value">UGX ${fmtK(d.savings?.total)}</div></div>
+      <div class="kpi"><div class="kpi-label">Deductions Total</div><div class="kpi-value">UGX ${fmtK(d.deductions?.total)}</div></div>
+      <div class="kpi r"><div class="kpi-label">Expenditures</div><div class="kpi-value">${(d.expenditure||[]).length} entries</div></div>
+      <div class="kpi a"><div class="kpi-label">New Members</div><div class="kpi-value">${d.newMembers?.count||0}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Prepared by: ${currentUser?.name}</div>
+  </div>`;
+}
+
+// ─── AUDIT ────────────────────────────────────────────────────────────────────
+async function loadAudit() {
+  const mod = document.getElementById('aud-mod')?.value || '';
+  const from = document.getElementById('aud-from')?.value || '';
+  const to = document.getElementById('aud-to')?.value || '';
+  let url = '/api/audit?limit=100';
+  if (mod) url += '&module=' + mod;
+  if (from) url += '&from=' + from;
+  if (to) url += '&to=' + to;
+  const res = await apiFetch(url);
+  if (!res) return;
+  const entries = await res.json();
+  document.getElementById('audit-log').innerHTML = (Array.isArray(entries) ? entries : []).map(e => `
+    <div class="arow">
+      <span class="ats">${e.created_at?.substring(0,19).replace('T',' ')}</span>
+      <span class="auser">${e.full_name || e.user_email?.split('@')[0] || 'System'}</span>
+      <span class="amod">${e.module}</span>
+      <span class="aact"><strong>${e.action}</strong>: ${e.description}</span>
+    </div>`).join('') || '<div class="text-m" style="padding:12px 0">No audit entries found.</div>';
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  const res = await apiFetch('/api/users');
+  if (!res) return;
+  const users = await res.json();
+  document.getElementById('users-tbody').innerHTML = (Array.isArray(users) ? users : []).map(u => `
+    <tr>
+      <td><img src="${u.picture||''}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;background:#eee" onerror="this.src=''" alt=""></td>
+      <td>${u.full_name}</td><td>${u.email}</td>
+      <td><span class="badge ${u.role}">${u.role}</span></td>
+      <td>${u.last_login?.substring(0,16)||'Never'}</td>
+      <td><span class="badge ${u.is_active?'active':'defaulted'}">${u.is_active?'Active':'Inactive'}</span></td>
+      <td>
+        <select onchange="changeRole(${u.id},this.value)" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:3px">
+          ${['viewer','secretary','treasurer','admin'].map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm ${u.is_active?'btn-w':'btn-s'}" style="margin-left:4px" onclick="toggleUser(${u.id})">${u.is_active?'Suspend':'Activate'}</button>
+      </td>
+    </tr>`).join('');
+}
+async function changeRole(id, role) {
+  const res = await apiFetch('/api/users/' + id + '/role', { method: 'PUT', body: JSON.stringify({ role }) });
+  if (res?.ok) toast('Role updated', 'ok'); else toast('Error updating role', 'err');
+}
+async function toggleUser(id) {
+  const res = await apiFetch('/api/users/' + id + '/toggle', { method: 'PUT' });
+  if (res?.ok) { toast('User status changed', 'ok'); loadUsers(); } else toast('Error', 'err');
+}
+
+// ─── POPULATE SELECTS ─────────────────────────────────────────────────────────
+async function populateSelects() {
+  const res = await apiFetch('/api/members?status=Active');
+  if (!res) return;
+  const members = await res.json();
+  const opts = '<option value="">Select...</option>' + members.map(m => `<option value="${m.id}">${m.full_name} (${m.reg_no})</option>`).join('');
+  ['lf-member','lf-guarantor'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+  populateStmtSelect(members);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+const today = new Date().toISOString().split('T')[0];
+document.querySelectorAll('input[type=date]').forEach(el => { if (!el.value) el.value = today; });
+
+init();
+</script>
+</body>
+</html>
